@@ -33,6 +33,10 @@ This Joomla 3.x CLI script helps Joomla users who are using the K2 extension to 
      public $testItemId = 123; // the K2 item id (#__k2_items.id) to migrate
      ```
      When `$testMode` is `true`, the script only migrates the K2 item whose ID is `$testItemId` (its category is created/mapped as usual) and then stops, instead of migrating the whole K2 database. Set `$testMode` back to `false` to run the full migration.
+   - **Reuse Category on Alias Match:** The script matches a K2 category to an existing Joomla category by title first. If no title matches, it creates a new category — but if that new category's auto-generated alias collides with an existing one (same parent/extension/language), Joomla fails with `JLIB_DATABASE_ERROR_CATEGORY_UNIQUE_ALIAS`, and by default that category (and its items) is skipped, same as before. Set the following to `true` to instead reuse the existing category with the matching alias:
+     ```php
+     public $reuseCategoryOnAliasMatch = false; // set to true to reuse existing categories on alias conflicts
+     ```
 
 ## Usage
 

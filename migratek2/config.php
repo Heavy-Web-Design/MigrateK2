@@ -30,6 +30,16 @@ class MigK2Config
 	public $testMode = false;
 	public $testItemId = 0;
 
+	/*
+	 * When a K2 category's title doesn't match an existing Joomla category
+	 * but its auto-generated alias collides with one that's already there
+	 * (same parent/extension/language), Joomla normally throws
+	 * "JLIB_DATABASE_ERROR_CATEGORY_UNIQUE_ALIAS" and the category fails
+	 * to be created. Set this to true to instead reuse that existing
+	 * category (matched by alias) for the migration.
+	 */
+	public $reuseCategoryOnAliasMatch = false;
+
 	/* The mapping between K2 extra fields and Articles custom fields */
 	public $cfMapping = [
 // 'k2_field_id' => 'content_field_id',

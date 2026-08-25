@@ -143,24 +143,45 @@ class Migratek2 extends JApplicationCli
                     $this->log('K2 Category ID: ' . $k2category->id . ', '.$category->getError(), JLog::ERROR);
                     continue;
                 }
-                if(!$category->store()){
-                    $this->log('K2 Category ID: ' . $k2category->id . ', '.$category->getError(), JLog::ERROR);
-                    continue;
+
+                // $category->check() derives the alias from the title when
+                // none was set. If that alias already belongs to another
+                // category with the same parent/extension/language, store()
+                // will fail with JLIB_DATABASE_ERROR_CATEGORY_UNIQUE_ALIAS
+                // even though the titles differ. Optionally reuse that
+                // existing category instead of failing the migration.
+                $existingCategoryId = 0;
+                if ((bool) $this->config->get('reuseCategoryOnAliasMatch', false)) {
+                    $db->setQuery("SELECT id FROM #__categories"
+                        . " WHERE extension = " . $db->quote('com_content')
+                        . " AND alias = " . $db->quote($category->alias)
+                        . " AND parent_id = " . (int) $category->parent_id
+                        . " AND language = " . $db->quote($category->language));
+                    $existingCategoryId = (int) $db->loadResult();
                 }
 
-                $mappingCatid[$k2category->id] = $category->id;
-                if (!$category->rebuildPath($category->id))
-                {
-                    $this->log('K2 Category ID: ' . $k2category->id . ', '.$category->getError(), JLog::ERROR);
-                    continue;
+                if ($existingCategoryId > 0) {
+                    $mappingCatid[$k2category->id] = $existingCategoryId;
+                } else {
+                    if(!$category->store()){
+                        $this->log('K2 Category ID: ' . $k2category->id . ', '.$category->getError(), JLog::ERROR);
+                        continue;
+                    }
+
+                    $mappingCatid[$k2category->id] = $category->id;
+                    if (!$category->rebuildPath($category->id))
+                    {
+                        $this->log('K2 Category ID: ' . $k2category->id . ', '.$category->getError(), JLog::ERROR);
+                        continue;
+                    }
+                    if (!$category->rebuild($category->id, $category->lft, $category->level, $category->path))
+                        // Rebuild the paths of the category's children:
+                    {
+                        $this->log('K2 Category ID: ' . $k2category->id . ', '.$category->getError(), JLog::ERROR);
+                        continue;
+                    }
                 }
-                if (!$category->rebuild($category->id, $category->lft, $category->level, $category->path))
-                    // Rebuild the paths of the category's children:
-                {
-                    $this->log('K2 Category ID: ' . $k2category->id . ', '.$category->getError(), JLog::ERROR);
-                    continue;
-                }
-            } 
+            }
             
             $query = "SELECT k2article.*
                 FROM #__k2_items AS k2article
