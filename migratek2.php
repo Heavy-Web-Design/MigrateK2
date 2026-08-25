@@ -92,6 +92,17 @@ class Migratek2 extends JApplicationCli
         $k2ItemsPerLoop = (int) $this->config->get("itemsPerLoop");
         $this->cfMapping = (array)$this->config->get("cfMapping");
         $this->K2ExtraFields = $this->_getK2ExtraFields();
+
+        $testMode = (bool) $this->config->get("testMode");
+        $testItemId = (int) $this->config->get("testItemId");
+        if ($testMode) {
+            if ($testItemId <= 0) {
+                $this->out('Test mode is enabled but "testItemId" is not set in config.php. Aborting.');
+                $this->close();
+            }
+            $this->out('Running in TEST MODE: only K2 item ID ' . $testItemId . ' will be migrated.');
+        }
+
         // Keep running the script until it's finished or the time limit is reached
         foreach ($k2categories as $k2category){
             $this->out('Starting to migrate K2 category: ' . $k2category->name);
@@ -154,6 +165,9 @@ class Migratek2 extends JApplicationCli
             $query = "SELECT k2article.*
                 FROM #__k2_items AS k2article
                 WHERE catid = ".(int)$k2category->id;
+            if ($testMode) {
+                $query .= " AND k2article.id = " . (int) $testItemId;
+            }
             $db->setQuery($query);
             $k2Items = $db->loadObjectList();
             $itemsFeatured = array();
@@ -233,6 +247,17 @@ class Migratek2 extends JApplicationCli
                 }					
             }
             if(count($itemsFeatured) > 0)  $this->saveFeatured($itemsFeatured);
+
+            if ($testMode && count($k2Items) > 0) {
+                // The test item has been found and migrated, no need to
+                // keep looping over the remaining K2 categories.
+                break;
+            }
+        }
+
+        if ($testMode) {
+            $this->log('Finished test migration of K2 item ID ' . $testItemId, JLog::INFO);
+            $this->close();
         }
 
         $this->log('Finished migrating K2 database', JLog::INFO);

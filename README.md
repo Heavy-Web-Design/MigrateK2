@@ -27,6 +27,12 @@ This Joomla 3.x CLI script helps Joomla users who are using the K2 extension to 
      In this example, K2 field with ID `3` is mapped to Joomla content field with ID `1`, K2 field `1` to Joomla content field `2`, and so on.
    - **Attachment Field:** Specify the ID of the attachment custom field (Note: only `File Upload` type of `Advanced Custom Fields` is supported for now).
    - **Attachment Folder:** Specify the attachments folder exactly the same as configured in the `File Upload` field.
+   - **Test Mode:** Before running the full migration, you can test your configuration against a single K2 item:
+     ```php
+     public $testMode = true;
+     public $testItemId = 123; // the K2 item id (#__k2_items.id) to migrate
+     ```
+     When `$testMode` is `true`, the script only migrates the K2 item whose ID is `$testItemId` (its category is created/mapped as usual) and then stops, instead of migrating the whole K2 database. Set `$testMode` back to `false` to run the full migration.
 
 ## Usage
 
