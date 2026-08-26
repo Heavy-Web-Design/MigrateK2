@@ -41,6 +41,11 @@ This Joomla 3.x CLI script helps Joomla users who are using the K2 extension to 
      ```php
      public $migrateHits = true; // set to false to not migrate K2 item hit counts
      ```
+   - **Migrate Rating:** By default, each K2 item's rating (its average rating and vote count, stored in K2's `#__k2_rating` table) is carried over to the migrated article's vote (Joomla's `#__content_rating` table, used by the core "Voting" feature). Set the following to `false` to leave migrated articles without a rating instead:
+     ```php
+     public $migrateRating = true; // set to false to not migrate K2 item ratings
+     ```
+     Items nobody rated in K2 have no rating to migrate and are left without a vote either way.
    - **Media Field Mapping:** A K2 item's Media tab ("Select third-party media provider" and "...and enter media URL (or ID)", e.g. a YouTube/Vimeo video) is stored by K2 as a single value shaped like `{provider}url-or-id{/provider}` (e.g. `{youtube}dQw4w9WgXcQ{/youtube}`). Map the provider and the URL/ID to their own Joomla Articles custom fields (MUST be created before running the script):
      ```php
      public $mediaProviderCFId = 4; // custom field to receive the provider, e.g. "youtube"

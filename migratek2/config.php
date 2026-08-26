@@ -47,6 +47,15 @@ class MigK2Config
 	 */
 	public $migrateHits = true;
 
+	/*
+	 * Whether to carry the K2 item's rating (#__k2_rating: rating_sum,
+	 * rating_count, lastip) over to the migrated article's vote
+	 * (#__content_rating), so the article shows the same average rating
+	 * and vote count K2 had. Set to false to leave migrated articles
+	 * without a rating instead.
+	 */
+	public $migrateRating = true;
+
 	/* The mapping between K2 extra fields and Articles custom fields */
 	public $cfMapping = [
 // 'k2_field_id' => 'content_field_id',

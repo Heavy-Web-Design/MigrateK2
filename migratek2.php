@@ -94,6 +94,7 @@ class Migratek2 extends JApplicationCli
         $this->cfMapping = (array)$this->config->get("cfMapping");
         $this->K2ExtraFields = $this->_getK2ExtraFields();
         $migrateHits = (bool) $this->config->get("migrateHits", true);
+        $migrateRating = (bool) $this->config->get("migrateRating", true);
 
         // Surface every K2 extra field that has no $cfMapping entry once,
         // upfront, instead of only finding out piecemeal (once per item)
@@ -280,6 +281,9 @@ class Migratek2 extends JApplicationCli
                 }
 
                 $this->_copyMediaField($item, $k2Item);
+                if ($migrateRating) {
+                    $this->_copyRating($item, $k2Item);
+                }
                 if($k2Item->featured == 1){
                 	$itemsFeatured[] = $item->id;
                 }					
@@ -496,6 +500,35 @@ class Migratek2 extends JApplicationCli
         if ($valueFieldId > 0) {
             $fieldModel->setFieldValue($valueFieldId, $item->id, $matches[2]);
         }
+    }
+
+    /**
+     * Copies the K2 item's rating (#__k2_rating, one row per item keyed by
+     * itemID: rating_sum, rating_count, lastip) over to the migrated
+     * article's vote (#__content_rating, the equivalent table core content
+     * uses for its "Voting" feature, keyed by content_id with the same
+     * rating_sum/rating_count/lastip columns). Items nobody rated in K2
+     * have no #__k2_rating row and are left without a vote, same as a
+     * freshly created article.
+     *
+     * @param object $item   The Joomla content item to copy the rating to.
+     * @param object $k2Item The K2 item to copy the rating from.
+     * @return void
+     */
+    private function _copyRating($item, $k2Item){
+        $db = JFactory::getDbo();
+        $db->setQuery("SELECT rating_sum, rating_count, lastip FROM #__k2_rating WHERE itemID = " . (int) $k2Item->id);
+        $rating = $db->loadObject();
+        if (!$rating || (int) $rating->rating_count <= 0) {
+            return;
+        }
+
+        $db->setQuery("REPLACE INTO #__content_rating (content_id, rating_sum, rating_count, lastip) VALUES ("
+            . (int) $item->id . ", "
+            . (int) $rating->rating_sum . ", "
+            . (int) $rating->rating_count . ", "
+            . $db->quote($rating->lastip) . ")");
+        $db->execute();
     }
 
     /**
