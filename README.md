@@ -94,8 +94,8 @@ See the Installation section below for how to configure each of these.
 
 If this script has helped you with your migration process, consider supporting its development.
 
-* [Support the work on this fork](https://paypal.me/juanpablohwd){target="_blank"}
-* [Support the original creator](https://paypal.me/mabdelaziz77){target="_blank"}
+* <a href="https://paypal.me/juanpablohwd" target="_blank" rel="noopener noreferrer">Support the work on this fork</a>
+* <a href="https://paypal.me/mabdelaziz77" target="_blank" rel="noopener noreferrer">Support the original creator</a>
 
 Thank you for your donation!
 
