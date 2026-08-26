@@ -16,6 +16,26 @@ class MigK2Config
 	/* Attachments Folder*/
 	public $attachmentsFolder = '';
 
+	/*
+	 * Optional subfolder inside the site's "images/" folder to save K2
+	 * item images (#__k2_items image, copied from media/k2/items/src/)
+	 * into when migrating, instead of dropping them directly in images/
+	 * alongside everything else, e.g. 'k2' to save them under images/k2/.
+	 * Leave blank to keep the previous behavior (images/ directly).
+	 * The folder is created automatically if it doesn't already exist.
+	 */
+	public $itemImagesFolder = '';
+
+	/*
+	 * Optional subfolder inside the site's "images/" folder to save K2
+	 * category images (#__k2_categories.image, copied from
+	 * media/k2/categories/) into when migrating, instead of dropping them
+	 * directly in images/ alongside everything else, e.g. 'k2/categories'.
+	 * Leave blank to keep the previous behavior (images/ directly).
+	 * The folder is created automatically if it doesn't already exist.
+	 */
+	public $categoryImagesFolder = '';
+
 	/* K2 items migrated per loop, just to avoid timeout */
 	public $itemsPerLoop = 50;
 

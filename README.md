@@ -27,6 +27,16 @@ This Joomla 3.x CLI script helps Joomla users who are using the K2 extension to 
      In this example, K2 field with ID `3` is mapped to Joomla content field with ID `1`, K2 field `1` to Joomla content field `2`, and so on.
    - **Attachment Field:** Specify the ID of the attachment custom field (Note: only `File Upload` type of `Advanced Custom Fields` is supported for now).
    - **Attachment Folder:** Specify the attachments folder exactly the same as configured in the `File Upload` field.
+   - **Item Images Folder:** By default, K2 item images are copied straight into the site's `images/` folder. Set the following to save them into a subfolder of `images/` instead (created automatically if it doesn't exist):
+     ```php
+     public $itemImagesFolder = 'k2'; // saves item images under images/k2/ instead of images/
+     ```
+     Leave blank (the default) to keep the previous behavior.
+   - **Category Images Folder:** Same idea, but for K2 category images:
+     ```php
+     public $categoryImagesFolder = 'k2/categories'; // saves category images under images/k2/categories/ instead of images/
+     ```
+     Leave blank (the default) to keep the previous behavior.
    - **Test Mode:** Before running the full migration, you can test your configuration against a single K2 item:
      ```php
      public $testMode = true;

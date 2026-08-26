@@ -127,8 +127,17 @@ class Migratek2 extends JApplicationCli
             } else {
                 $category =JTable::getInstance('Category', 'JTable');
                 if ($k2category->image && JFile::exists(realpath(JPATH_SITE.'/media/k2/categories/'.$k2category->image))) {
-                    JFile::copy(realpath(JPATH_SITE.'/media/k2/categories/'.$k2category->image), JPATH_SITE.'/images/'.$k2category->image);
-                    $category->params->image =  'images/'.$k2category->image;
+                    // Optional subfolder inside "images/" to save K2 category
+                    // images into, instead of dropping them directly in
+                    // images/ alongside everything else.
+                    $categoryImagesFolder = trim((string) $this->config->get('categoryImagesFolder', ''), '/\\');
+                    $categoryImagesDir = JPATH_SITE . '/images/' . ($categoryImagesFolder !== '' ? $categoryImagesFolder . '/' : '');
+                    if ($categoryImagesFolder !== '' && !JFolder::exists($categoryImagesDir)) {
+                        JFolder::create($categoryImagesDir);
+                    }
+                    $categoryImgRelPath = ($categoryImagesFolder !== '' ? $categoryImagesFolder . '/' : '') . $k2category->image;
+                    JFile::copy(realpath(JPATH_SITE.'/media/k2/categories/'.$k2category->image), $categoryImagesDir.$k2category->image);
+                    $category->params->image =  'images/'.$categoryImgRelPath;
                 }
                 else {
                     $category->params->image = '';
@@ -247,12 +256,21 @@ class Migratek2 extends JApplicationCli
                 $item->newTags = $this->getTags($k2Item->id);
                 $imgFilename = md5("Image". $k2Item->id) . '.jpg';
                 if (JFile::exists(realpath(JPATH_SITE.'/media/k2/items/src/'.$imgFilename))) {
-                    JFile::copy(realpath(JPATH_SITE.'/media/k2/items/src/'.$imgFilename), JPATH_SITE.'/images/'.$imgFilename);
-                    $images= json_decode('{"image_intro":"images\\/'. $imgFilename .'",
+                    // Optional subfolder inside "images/" to save migrated K2
+                    // item images into, instead of dropping them straight in
+                    // images/ alongside everything else.
+                    $itemImagesFolder = trim((string) $this->config->get('itemImagesFolder', ''), '/\\');
+                    $itemImagesDir = JPATH_SITE . '/images/' . ($itemImagesFolder !== '' ? $itemImagesFolder . '/' : '');
+                    if ($itemImagesFolder !== '' && !JFolder::exists($itemImagesDir)) {
+                        JFolder::create($itemImagesDir);
+                    }
+                    $imgRelPath = ($itemImagesFolder !== '' ? $itemImagesFolder . '/' : '') . $imgFilename;
+                    JFile::copy(realpath(JPATH_SITE.'/media/k2/items/src/'.$imgFilename), $itemImagesDir.$imgFilename);
+                    $images= json_decode('{"image_intro":"images\\/'. $imgRelPath .'",
                             "float_intro":"",
                             "image_intro_alt":"",
                             "image_intro_caption":"",
-                            "image_fulltext":"images\\/'. $imgFilename .'",
+                            "image_fulltext":"images\\/'. $imgRelPath .'",
                             "float_fulltext":"",
                             "image_fulltext_alt":"",
                             "image_fulltext_caption":""
