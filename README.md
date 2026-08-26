@@ -2,14 +2,28 @@
 
 This Joomla 3.x CLI script helps Joomla users who are using the K2 extension to migrate K2 database entities (including items, categories, tags, extra fields, and images) into their corresponding entities of core Joomla content.
 
-## Prerequisites
+## ✨ Features on this fork
+
+On top of the original script, this fork adds:
+
+- **Test mode:** migrate a single K2 item to try out your configuration before running the full migration.
+- **Reuse category on alias conflict:** optionally reuse an existing Joomla category instead of failing the migration when an auto-generated alias collides with one already there.
+- **Better logging for extra fields:** unmapped or missing K2 extra fields are logged upfront, and dropdown/select/radio/multiple-select values are resolved to their option labels instead of raw internal values.
+- **Media field mapping:** K2's "Media" tab (third-party provider + URL/ID, e.g. a YouTube video) is split and migrated into Joomla Articles custom fields.
+- **Migrate item hits:** optionally carry K2 item hit counts over to the migrated article's hit count.
+- **Migrate rating:** optionally carry K2 item ratings over to the migrated article's vote.
+- **Configurable images folder:** optionally save migrated K2 item and category images into a subfolder of `images/` instead of directly in it.
+
+See the Installation section below for how to configure each of these.
+
+## ✅ Prerequisites
 
 - Joomla 3.10
 - PHP 7.4
 - Terminal or Shell access
 - Article custom fields (corresponding to K2 extra fields with a matching field type)
 
-## Installation
+## 🛠️ Installation
 
 1. Clone or download this repository to the `cli` folder inside your Joomla site's root directory.
 2. Fill in the required configuration values in the `migratek2/config.php` file:
@@ -63,7 +77,7 @@ This Joomla 3.x CLI script helps Joomla users who are using the K2 extension to 
      ```
      Leave either at `0` to skip it. Uploaded/remote media use this same bracket format (a file extension in place of the provider name) and will also be split into these two fields if configured; a raw HTML embed (the form's "Embed" tab) doesn't use this format and isn't migrated.
 
-## Usage
+## 🚀 Usage
 
 1. Navigate to the document root of your Joomla website.
 2. Run the script using the command: 
@@ -78,11 +92,12 @@ This Joomla 3.x CLI script helps Joomla users who are using the K2 extension to 
 
 ## ☕ Support This Project
 
-If this script has helped you with your migration process, consider supporting its development. Your donations help me maintain and improve this project.
+If this script has helped you with your migration process, consider supporting its development.
 
-[Buy me a coffee](https://paypal.me/mabdelaziz77) ☕
+* [Support the work on this fork](https://paypal.me/juanpablohwd){target="_blank"}
+* [Support the original creator](https://paypal.me/mabdelaziz77){target="_blank"}
 
-Thank you for your support!
+Thank you for your donation!
 
 ## ⚠️ Disclaimer & Warranty
 
