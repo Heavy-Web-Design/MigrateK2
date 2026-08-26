@@ -37,6 +37,12 @@ This Joomla 3.x CLI script helps Joomla users who are using the K2 extension to 
      ```php
      public $reuseCategoryOnAliasMatch = false; // set to true to reuse existing categories on alias conflicts
      ```
+   - **Media Field Mapping:** A K2 item's Media tab ("Select third-party media provider" and "...and enter media URL (or ID)", e.g. a YouTube/Vimeo video) is stored by K2 as a single value shaped like `{provider}url-or-id{/provider}` (e.g. `{youtube}dQw4w9WgXcQ{/youtube}`). Map the provider and the URL/ID to their own Joomla Articles custom fields (MUST be created before running the script):
+     ```php
+     public $mediaProviderCFId = 4; // custom field to receive the provider, e.g. "youtube"
+     public $mediaValueCFId = 5;    // custom field to receive the URL/ID
+     ```
+     Leave either at `0` to skip it. Uploaded/remote media use this same bracket format (a file extension in place of the provider name) and will also be split into these two fields if configured; a raw HTML embed (the form's "Embed" tab) doesn't use this format and isn't migrated.
 
 ## Usage
 

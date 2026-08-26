@@ -275,6 +275,8 @@ class Migratek2 extends JApplicationCli
                 if (count($attachments) > 0) {
                     $this->_addAttachments($item, $attachments);
                 }
+
+                $this->_copyMediaField($item, $k2Item);
                 if($k2Item->featured == 1){
                 	$itemsFeatured[] = $item->id;
                 }					
@@ -451,6 +453,47 @@ class Migratek2 extends JApplicationCli
         }
     }
 
+
+    /**
+     * Copies the K2 item's "Media" value (its #__k2_items.video column) to
+     * Joomla custom fields, splitting it into the third-party media
+     * provider and the URL/ID entered for it.
+     *
+     * K2's item edit form Media tab stores this as a string shaped like
+     * "{provider}url-or-id{/provider}" (e.g. "{youtube}dQw4w9WgXcQ{/youtube}")
+     * for the "Select third-party media provider" / "...and enter media
+     * URL (or ID)" options - as well as for uploaded/remote media, which
+     * use the same bracket format with a file extension in place of the
+     * provider name. A raw HTML embed (the form's "Embed" tab) doesn't use
+     * this format and is skipped.
+     *
+     * @param object $item   The Joomla content item to copy the media to.
+     * @param object $k2Item The K2 item to copy the media from.
+     * @return void
+     */
+    private function _copyMediaField($item, $k2Item){
+        $providerFieldId = (int) $this->config->get('mediaProviderCFId');
+        $valueFieldId = (int) $this->config->get('mediaValueCFId');
+        if ($providerFieldId <= 0 && $valueFieldId <= 0) {
+            return;
+        }
+
+        if (empty($k2Item->video)) {
+            return;
+        }
+
+        if (!preg_match('#^\{(.*?)\}(.*?)\{/\1\}$#s', $k2Item->video, $matches)) {
+            return;
+        }
+
+        $fieldModel = JModelLegacy::getInstance('Field', 'FieldsModel', ['ignore_request' => true]);
+        if ($providerFieldId > 0) {
+            $fieldModel->setFieldValue($providerFieldId, $item->id, $matches[1]);
+        }
+        if ($valueFieldId > 0) {
+            $fieldModel->setFieldValue($valueFieldId, $item->id, $matches[2]);
+        }
+    }
 
     /**
      * Copies custom fields from a K2 item to a Joomla content item.

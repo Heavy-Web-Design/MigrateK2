@@ -46,4 +46,20 @@ class MigK2Config
 		'1' 	=> '5',
 		'2' 	=> '6',
 	];
+
+	/*
+	 * K2 items can carry a "Media" value (#__k2_items.video) set via the
+	 * item edit form's Media tab, options "Select third-party media
+	 * provider" (e.g. YouTube, Vimeo, ...) and "...and enter media URL
+	 * (or ID)". K2 stores that as a single string shaped like
+	 * "{provider}url-or-id{/provider}", e.g. "{youtube}dQw4w9WgXcQ{/youtube}".
+	 * Set the ids below to migrate the provider and the URL/ID into their
+	 * own Joomla custom (com_fields) fields on the article. Leave either
+	 * at 0 to skip it. Media set via the other Media tab options
+	 * (uploaded file, remote file URL) uses the same bracket format and
+	 * will also be split into these two fields; a raw HTML embed (the
+	 * "Embed" tab) does not use this format and is not migrated here.
+	 */
+	public $mediaProviderCFId = 0;
+	public $mediaValueCFId = 0;
 }
