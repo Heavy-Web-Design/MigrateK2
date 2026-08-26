@@ -40,6 +40,13 @@ class MigK2Config
 	 */
 	public $reuseCategoryOnAliasMatch = false;
 
+	/*
+	 * Whether to carry the K2 item's hit count (#__k2_items.hits) over to
+	 * the migrated article's hit count (#__content.hits). Set to false to
+	 * leave migrated articles at their default hit count (0) instead.
+	 */
+	public $migrateHits = true;
+
 	/* The mapping between K2 extra fields and Articles custom fields */
 	public $cfMapping = [
 // 'k2_field_id' => 'content_field_id',

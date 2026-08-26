@@ -93,6 +93,7 @@ class Migratek2 extends JApplicationCli
         $k2ItemsPerLoop = (int) $this->config->get("itemsPerLoop");
         $this->cfMapping = (array)$this->config->get("cfMapping");
         $this->K2ExtraFields = $this->_getK2ExtraFields();
+        $migrateHits = (bool) $this->config->get("migrateHits", true);
 
         // Surface every K2 extra field that has no $cfMapping entry once,
         // upfront, instead of only finding out piecemeal (once per item)
@@ -233,7 +234,9 @@ class Migratek2 extends JApplicationCli
                 $item->publish_down = $k2Item->publish_down;
                 $item->access = $k2Item->access;
                 $item->ordering = $k2Item->ordering;
-                $item->hits = $k2Item->hits;
+                if ($migrateHits) {
+                    $item->hits = $k2Item->hits;
+                }
                 $item->metadesc = $k2Item->metadesc;
                 $item->metadata = $k2Item->metadata;
                 $item->metakey = $k2Item->metakey;
