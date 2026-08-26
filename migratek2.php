@@ -45,6 +45,7 @@ class Migratek2 extends JApplicationCli
 
     public $K2ExtraFields = array();
     public $cfMapping = array();
+    private $warnedCfIds = array();
 
 	public function doExecute()
 	{
@@ -92,6 +93,17 @@ class Migratek2 extends JApplicationCli
         $k2ItemsPerLoop = (int) $this->config->get("itemsPerLoop");
         $this->cfMapping = (array)$this->config->get("cfMapping");
         $this->K2ExtraFields = $this->_getK2ExtraFields();
+
+        // Surface every K2 extra field that has no $cfMapping entry once,
+        // upfront, instead of only finding out piecemeal (once per item)
+        // once the migration is already underway.
+        foreach ($this->K2ExtraFields as $k2Field) {
+            if (!isset($this->cfMapping[$k2Field->id])) {
+                $this->log('K2 extra field ID ' . $k2Field->id . ' ("' . $k2Field->name
+                    . '", type "' . $k2Field->type . '") has no entry in $cfMapping.'
+                    . ' Its values will be skipped until it is mapped.', JLog::WARNING);
+            }
+        }
 
         $testMode = (bool) $this->config->get("testMode");
         $testItemId = (int) $this->config->get("testItemId");
@@ -448,25 +460,61 @@ class Migratek2 extends JApplicationCli
      * @return void
      */
     private function _copyCustomFields($item, $extraFields){
-        $fieldModel = JModelLegacy::getInstance('Field', 'FieldsModel', ['ignore_request' => true]);                  
+        $fieldModel = JModelLegacy::getInstance('Field', 'FieldsModel', ['ignore_request' => true]);
         foreach ($extraFields as $eField) {
+            // The K2 extra field definition (type, options) must still exist;
+            // an item can reference a field id that was since deleted in K2.
+            if (!isset($this->K2ExtraFields[$eField->id])) {
+                if (!isset($this->warnedCfIds['deleted-' . $eField->id])) {
+                    $this->warnedCfIds['deleted-' . $eField->id] = true;
+                    $this->log('K2 extra field ID ' . $eField->id
+                        . ' no longer exists in #__k2_extra_fields; skipping (item ID ' . $item->id . ' is the first item hit).', JLog::WARNING);
+                }
+                continue;
+            }
+
+            // Every K2 extra field that appears on migrated items must have
+            // an explicit entry in $cfMapping (config.php). Without this
+            // check, a missing entry silently resolves to field id 0 and
+            // the value is lost with no trace. Already reported once, in
+            // bulk, at startup - here we just skip without re-logging per item.
+            if (!isset($this->cfMapping[$eField->id])) {
+                continue;
+            }
+
             $value = null;
-            switch ($this->K2ExtraFields[$eField->id]->type) {
+            $efType = $this->K2ExtraFields[$eField->id]->type;
+            $efOptions = $this->K2ExtraFields[$eField->id]->field_info;
+            switch ($efType) {
                 case 'link':
                     $value = $eField->value[1];
                     break;
                 case 'multipleSelect':
-                    $efOptions = $this->K2ExtraFields[$eField->id]->field_info;
                     $value = array();
                     foreach ($eField->value as $efValue) {
                         // In case MEFGforK2 is used to support options as icons/images
+                        if (!isset($efOptions[$efValue]['name'])) {
+                            continue;
+                        }
                         $selected = explode('|', $efOptions[$efValue]['name']);
-                        $value[] = $selected[0];                  
+                        $value[] = $selected[0];
                     }
                     break;
                 default:
-                    $value = $eField->value;
-                    break;  
+                    // Single-value option fields (dropdown/select, radio, etc.)
+                    // store the option's internal value, which needs the same
+                    // key => name translation multipleSelect does above, so it
+                    // matches the corresponding Joomla list field's option
+                    // value. Fields without options (text, textarea, ...)
+                    // have an empty $efOptions and fall through to the raw
+                    // K2 value unchanged.
+                    if (!empty($efOptions) && isset($efOptions[$eField->value]['name'])) {
+                        $selected = explode('|', $efOptions[$eField->value]['name']);
+                        $value = $selected[0];
+                    } else {
+                        $value = $eField->value;
+                    }
+                    break;
             }
             $fieldModel->setFieldValue(
                 (int)$this->cfMapping[$eField->id],
